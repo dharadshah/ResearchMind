@@ -62,3 +62,17 @@ class AgentNode:
     GRADE = "grade"
     GENERATE = "generate"
     FALLBACK = "fallback"
+
+class AgentName:
+    SUPERVISOR = "supervisor"
+    RESEARCH = "research"
+    SUMMARISATION = "summarisation"
+    FACT_CHECK = "fact_check"
+
+
+class QueryIntent:
+    RESEARCH = "research"
+    SUMMARISE = "summarise"
+    FACT_CHECK = "fact_check"
+
+    ALL = [RESEARCH, SUMMARISE, FACT_CHECK]

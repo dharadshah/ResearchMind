@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from app.config.database import get_db
-from app.services.research_agent import run_agent
+from app.services.agents.supervisor_agent import run_supervisor
 from app.services.conversation_service import ConversationService
 from app.schemas.conversation import ConversationResponse
 from app.constants.messages import AGENT_RUN_FAILED
@@ -23,6 +23,8 @@ class ResearchResponse(BaseModel):
     response: str
     decision: str
     tools_used: list[str]
+    agent_used: str
+    intent: str
     sources: list[str]
     chunk_count: int
     conversation_id: int
@@ -40,7 +42,7 @@ def query(request: ResearchRequest, db: Session = Depends(get_db)):
             conversation = service.create_conversation()
             history = []
 
-        result = run_agent(request.question, history=history)
+        result = run_supervisor(request.question, history=history)
 
         service.add_turn(
             conversation_id=conversation.id,
@@ -56,10 +58,14 @@ def query(request: ResearchRequest, db: Session = Depends(get_db)):
             conversation_id=conversation.id,
         )
     except Exception as e:
-        print(f"Research agent error: {e}")
-        logger.error("research query failed | question: %s | error: %s", 
-                     request.question, str(e), exc_info=True)
+        logger.error(
+            "research query failed | question: %s | error: %s",
+            request.question,
+            str(e),
+            exc_info=True,
+        )
         raise HTTPException(status_code=503, detail=AGENT_RUN_FAILED)
+
 
 @router.get("/conversations", response_model=list[ConversationResponse])
 def list_conversations(db: Session = Depends(get_db)):

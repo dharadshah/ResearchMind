@@ -38,3 +38,27 @@ FALLBACK_RESPONSE = (
     "I could not find relevant information to answer your question. "
     "Please try rephrasing or ingesting more documents."
 )
+
+SUPERVISOR_INTENT_PROMPT = (
+    "You are a supervisor agent. Classify the user question into exactly one intent.\n\n"
+    "Intents:\n"
+    "- research: questions asking what something is, how it works, or requesting information\n"
+    "- summarise: questions asking for a summary of a document or topic\n"
+    "- fact_check: questions asking to verify a claim or check if something is true\n\n"
+    "Question: {question}\n\n"
+    "Respond with only one word: research, summarise, or fact_check."
+)
+
+SUMMARISATION_PROMPT = (
+    "You are a summarisation assistant. Based only on the provided context, "
+    "produce a clear and concise summary.\n\n"
+    "Context:\n{context}"
+)
+
+FACT_CHECK_PROMPT = (
+    "You are a fact checking assistant. Based on the provided context, "
+    "determine whether the claim is supported, contradicted, or unverifiable.\n\n"
+    "Claim: {question}\n\n"
+    "Context:\n{context}\n\n"
+    "Respond with: Supported, Contradicted, or Unverifiable — followed by a brief explanation."
+)
