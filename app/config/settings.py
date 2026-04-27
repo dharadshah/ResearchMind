@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     embedding_model: str = "all-MiniLM-L6-v2"
     qdrant_url: str = "http://localhost:6333"
     chroma_path: str = "./chroma_store"
+    default_chunk_size: int = 512
+    default_chunk_overlap: int = 50
 
     model_config = {"env_file": ".env"}
 

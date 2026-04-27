@@ -19,7 +19,8 @@ dependencies = [
     "faiss-cpu (>=1.13.2,<2.0.0)",
     "sentence-transformers (>=5.4.1,<6.0.0)",
     "chromadb (>=1.5.8,<2.0.0)",
-    "qdrant-client (>=1.17.1,<2.0.0)"
+    "qdrant-client (>=1.17.1,<2.0.0)",
+    "llama-index-readers-web (>=0.6.0,<0.7.0)"
 ]
 
 [build-system]

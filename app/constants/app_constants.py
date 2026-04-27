@@ -34,3 +34,10 @@ class VectorStoreProvider:
     QDRANT = "qdrant"
 
     ALL = [FAISS, CHROMA, QDRANT]
+
+class DocumentType:
+    PDF = "pdf"
+    TEXT = "text"
+    URL = "url"
+
+    ALL = [PDF, TEXT, URL]

@@ -18,3 +18,8 @@ PROMPT_RUN_FAILED = "Failed to run prompt. Please try again."
 VECTOR_STORE_NOT_INITIALIZED = "Vector store has not been initialized yet. Please ingest documents first."
 VECTOR_STORE_PROVIDER_NOT_SUPPORTED = "Vector store provider '{provider}' is not supported."
 EMBEDDING_FAILED = "Failed to generate embeddings. Please try again."
+
+INGESTION_STARTED = "Document ingestion started for '{source}'."
+INGESTION_COMPLETE = "Document '{source}' ingested successfully with {chunk_count} chunks."
+INGESTION_FAILED = "Failed to ingest document '{source}'. Please try again."
+URL_FETCH_FAILED = "Failed to fetch content from URL '{url}'."

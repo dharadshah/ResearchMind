@@ -1,8 +1,6 @@
 from abc import ABC, abstractmethod
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_groq import ChatGroq
-from langchain_openai import ChatOpenAI
-from langchain_ollama import ChatOllama
 from app.config.settings import settings
 from app.constants.app_constants import LLMProvider
 from app.constants.messages import PROVIDER_NOT_SUPPORTED
@@ -24,29 +22,10 @@ class GroqProvider(LLMProviderBase):
         )
 
 
-class OpenAIProvider(LLMProviderBase):
-
-    def get_model(self) -> BaseChatModel:
-        return ChatOpenAI(
-            api_key=settings.openai_api_key,
-            model=settings.openai_model,
-        )
-
-
-class OllamaProvider(LLMProviderBase):
-
-    def get_model(self) -> BaseChatModel:
-        return ChatOllama(
-            base_url=settings.ollama_base_url,
-            model=settings.ollama_model,
-        )
-
-
 class LLMGateway:
 
     _providers: dict[str, LLMProviderBase] = {
         LLMProvider.GROQ: GroqProvider(),
-        LLMProvider.OLLAMA: OllamaProvider(),
     }
 
     @classmethod
