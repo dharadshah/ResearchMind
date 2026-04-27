@@ -5,16 +5,22 @@ description = "AI-powered research assistant"
 authors = [
     {name = "Dhara Shah",email = "dharadshah@gmail.com"}
 ]
-requires-python = ">=3.13"
+python = ">=3.13,<4.0.0"
 dependencies = [
     "fastapi (>=0.136.1,<0.137.0)",
     "uvicorn (>=0.46.0,<0.47.0)",
     "sqlalchemy (>=2.0.49,<3.0.0)",
     "pydantic-settings (>=2.14.0,<3.0.0)",
-    "gradio (>=6.13.0,<7.0.0)"
+    "gradio (>=6.13.0,<7.0.0)",
+    "langchain-groq (>=1.1.2,<2.0.0)",
+    "langchain-openai (>=1.2.1,<2.0.0)",
+    "langchain-ollama (>=1.1.0,<2.0.0)",
+    "langchain-core (>=1.3.2,<2.0.0)"
 ]
-
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.dependencies]
+python = ">=3.13,<4.0.0"
