@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from app.config.database import Base, engine
-from app.routers import llm, prompt_studio, vector_store, document_indexer
+from app.routers import llm, prompt_studio, vector_store, document_indexer, tools, research_agent
 
 
 @asynccontextmanager
@@ -21,7 +21,8 @@ app.include_router(llm.router)
 app.include_router(prompt_studio.router)
 app.include_router(vector_store.router)
 app.include_router(document_indexer.router)
-
+app.include_router(tools.router)
+app.include_router(research_agent.router)
 
 
 @app.get("/health", tags=["system"])

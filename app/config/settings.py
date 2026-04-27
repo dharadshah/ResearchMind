@@ -17,6 +17,9 @@ class Settings(BaseSettings):
     chroma_path: str = "./chroma_store"
     default_chunk_size: int = 512
     default_chunk_overlap: int = 50
+    langchain_tracing_v2: str = "false"
+    langchain_api_key: str = ""
+    langchain_project: str = "researchmind"
 
     model_config = {"env_file": ".env"}
 

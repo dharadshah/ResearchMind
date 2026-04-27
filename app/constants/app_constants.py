@@ -41,3 +41,24 @@ class DocumentType:
     URL = "url"
 
     ALL = [PDF, TEXT, URL]
+
+class ToolName:
+    VECTOR_SEARCH = "search_documents"
+    WIKIPEDIA = "search_wikipedia"
+    ARXIV = "search_arxiv"
+    WEB_SEARCH = "web_search"
+
+    ALL = [VECTOR_SEARCH, WIKIPEDIA, ARXIV, WEB_SEARCH]
+
+class AgentDecision:
+    RELEVANT = "relevant"
+    NOT_RELEVANT = "not_relevant"
+    GENERATE = "generate"
+    FALLBACK = "fallback"
+
+class AgentNode:
+    TOOL_SELECTOR = "tool_selector"
+    EXECUTE_TOOL = "execute_tool"
+    GRADE = "grade"
+    GENERATE = "generate"
+    FALLBACK = "fallback"

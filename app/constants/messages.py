@@ -23,3 +23,8 @@ INGESTION_STARTED = "Document ingestion started for '{source}'."
 INGESTION_COMPLETE = "Document '{source}' ingested successfully with {chunk_count} chunks."
 INGESTION_FAILED = "Failed to ingest document '{source}'. Please try again."
 URL_FETCH_FAILED = "Failed to fetch content from URL '{url}'."
+
+TOOL_EXECUTION_FAILED = "Tool '{tool_name}' failed to execute: {error}"
+TOOL_NO_RESULTS = "No results found for query: '{query}'"
+
+AGENT_RUN_FAILED = "The research agent failed to process your query. Please try again."

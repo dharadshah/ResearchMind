@@ -18,3 +18,23 @@ SYSTEM_USER_ROLE_PROMPT = (
     "You are {role}. Your task is to {task}.\n\n"
     "Input: {input}"
 )
+
+RAG_SYSTEM_PROMPT = (
+    "You are a research assistant. Answer the user's question using only the "
+    "provided context. If the context does not contain enough information to "
+    "answer the question, say so clearly. Do not make up information.\n\n"
+    "Context:\n{context}"
+)
+
+RELEVANCE_GRADER_PROMPT = (
+    "You are a relevance grader. Given a user question and a retrieved result, "
+    "decide if the result is relevant to answering the question.\n\n"
+    "Question: {question}\n\n"
+    "Result: {result}\n\n"
+    "Respond with only 'yes' or 'no'."
+)
+
+FALLBACK_RESPONSE = (
+    "I could not find relevant information to answer your question. "
+    "Please try rephrasing or ingesting more documents."
+)
