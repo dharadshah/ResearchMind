@@ -1,7 +1,10 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from app.config.database import Base, engine
+from app.config.logging_config import setup_logging
 from app.routers import llm, prompt_studio, vector_store, document_indexer, tools, research_agent
+
+setup_logging()
 
 
 @asynccontextmanager

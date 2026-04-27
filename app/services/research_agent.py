@@ -1,7 +1,7 @@
 import os
-from typing import TypedDict, Annotated
+from typing import TypedDict
 from langgraph.graph import StateGraph, END
-from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 from app.services.llm_gateway import LLMGateway
 from app.services.research_tools import (
     ALL_TOOLS,
@@ -17,6 +17,9 @@ from app.constants.prompts import (
     FALLBACK_RESPONSE,
 )
 from app.constants.app_constants import AgentDecision, AgentNode, ToolName
+from app.config.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 
 os.environ["LANGCHAIN_TRACING_V2"] = settings.langchain_tracing_v2
@@ -26,6 +29,7 @@ os.environ["LANGCHAIN_PROJECT"] = settings.langchain_project
 
 class AgentState(TypedDict):
     question: str
+    history: list[dict]
     tool_results: list[dict]
     relevant_results: list[dict]
     response: str
@@ -34,24 +38,34 @@ class AgentState(TypedDict):
 
 
 def tool_selector_node(state: AgentState) -> AgentState:
+    logger.info("tool_selector_node | question: %s", state["question"])
     model = LLMGateway.get_model()
-    model_with_tools = model.bind_tools(ALL_TOOLS)
+    model_with_tools = model.bind_tools(ALL_TOOLS, tool_choice="auto")
 
-    result = model_with_tools.invoke([
-        HumanMessage(content=state["question"])
-    ])
+    messages = []
+    for turn in state["history"]:
+        if turn["role"] == "user":
+            messages.append(HumanMessage(content=turn["content"]))
+        elif turn["role"] == "assistant":
+            messages.append(AIMessage(content=turn["content"]))
+    messages.append(HumanMessage(content=state["question"]))
+
+    result = model_with_tools.invoke(messages)
 
     tool_results = []
     tools_used = []
 
+    tool_map = {
+        "search_documents": search_documents,
+        "search_wikipedia": search_wikipedia,
+        "search_arxiv": search_arxiv,
+        "web_search": web_search,
+    }
+
     if result.tool_calls:
-        tool_map = {
-            ToolName.VECTOR_SEARCH: search_documents,
-            ToolName.WIKIPEDIA: search_wikipedia,
-            ToolName.ARXIV: search_arxiv,
-            ToolName.WEB_SEARCH: web_search,
-        }
         for tool_call in result.tool_calls:
+            logger.info("tool_call | name: %s | args: %s", tool_call["name"], tool_call["args"])
+
             tool_name = tool_call["name"]
             tool_input = tool_call["args"].get("query", state["question"])
             if tool_name in tool_map:
@@ -63,18 +77,22 @@ def tool_selector_node(state: AgentState) -> AgentState:
                 })
                 tools_used.append(tool_name)
     else:
+        logger.warning("tool_selector_node | no tool calls returned, defaulting to search_documents")
+
         result_output = search_documents.invoke(state["question"])
         tool_results.append({
-            "tool": ToolName.VECTOR_SEARCH,
+            "tool": "search_documents",
             "query": state["question"],
             "result": result_output,
         })
-        tools_used.append(ToolName.VECTOR_SEARCH)
+        tools_used.append("search_documents")
 
     return {**state, "tool_results": tool_results, "tools_used": tools_used}
 
 
 def grade_node(state: AgentState) -> AgentState:
+    logger.info("grade_node | grading %d tool results", len(state["tool_results"]))
+
     model = LLMGateway.get_model()
     relevant = []
 
@@ -88,28 +106,38 @@ def grade_node(state: AgentState) -> AgentState:
             relevant.append(tool_result)
 
     decision = (
-        AgentDecision.RELEVANT
-        if relevant
-        else AgentDecision.NOT_RELEVANT
+        AgentDecision.RELEVANT if relevant else AgentDecision.NOT_RELEVANT
     )
+    logger.info("grade_node | decision: %s | relevant: %d", decision, len(relevant))
+
     return {**state, "relevant_results": relevant, "decision": decision}
 
 
 def generate_node(state: AgentState) -> AgentState:
+    logger.info("generate_node | generating from %d relevant results", len(state["relevant_results"]))
+
     context = "\n\n".join(
         f"[{r.get('tool', 'unknown')}]: {r.get('result', '')}"
         for r in state["relevant_results"]
     )
     system_prompt = RAG_SYSTEM_PROMPT.format(context=context)
+
+    messages = [SystemMessage(content=system_prompt)]
+    for turn in state["history"]:
+        if turn["role"] == "user":
+            messages.append(HumanMessage(content=turn["content"]))
+        elif turn["role"] == "assistant":
+            messages.append(AIMessage(content=turn["content"]))
+    messages.append(HumanMessage(content=state["question"]))
+
     model = LLMGateway.get_model()
-    result = model.invoke([
-        SystemMessage(content=system_prompt),
-        HumanMessage(content=state["question"]),
-    ])
+    result = model.invoke(messages)
     return {**state, "response": result.content}
 
 
 def fallback_node(state: AgentState) -> AgentState:
+    logger.warning("fallback_node | no relevant results found for question: %s", state["question"])
+
     return {**state, "response": FALLBACK_RESPONSE}
 
 
@@ -146,9 +174,12 @@ def build_agent() -> StateGraph:
 agent = build_agent()
 
 
-def run_agent(question: str) -> dict:
+def run_agent(question: str, history: list[dict] | None = None) -> dict:
+    logger.info("run_agent | start | question: %s", question)
+
     initial_state: AgentState = {
         "question": question,
+        "history": history or [],
         "tool_results": [],
         "relevant_results": [],
         "response": "",
@@ -156,6 +187,8 @@ def run_agent(question: str) -> dict:
         "tools_used": [],
     }
     final_state = agent.invoke(initial_state)
+    logger.info("run_agent | complete | decision: %s | tools_used: %s", 
+                final_state["decision"], final_state["tools_used"])
     return {
         "question": final_state["question"],
         "response": final_state["response"],

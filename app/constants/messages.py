@@ -28,3 +28,6 @@ TOOL_EXECUTION_FAILED = "Tool '{tool_name}' failed to execute: {error}"
 TOOL_NO_RESULTS = "No results found for query: '{query}'"
 
 AGENT_RUN_FAILED = "The research agent failed to process your query. Please try again."
+
+CONVERSATION_NOT_FOUND = "Conversation with id {conversation_id} was not found."
+CONVERSATION_CREATED = "Conversation created successfully."

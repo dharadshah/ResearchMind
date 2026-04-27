@@ -11,7 +11,7 @@ _arxiv = ArxivQueryRun(api_wrapper=ArxivAPIWrapper(top_k_results=2))
 _ddg = DuckDuckGoSearchRun(api_wrapper=DuckDuckGoSearchAPIWrapper())
 
 
-@tool(ToolName.VECTOR_SEARCH)
+@tool
 def search_documents(query: str) -> str:
     """Search the ingested documents in the local vector store.
     Use this tool first before searching the web or Wikipedia.
@@ -31,7 +31,7 @@ def search_documents(query: str) -> str:
         return TOOL_EXECUTION_FAILED.format(tool_name=ToolName.VECTOR_SEARCH, error=str(e))
 
 
-@tool(ToolName.WIKIPEDIA)
+@tool
 def search_wikipedia(query: str) -> str:
     """Search Wikipedia for factual background information on a topic.
     Use this when the question needs general knowledge or definitions
@@ -45,7 +45,7 @@ def search_wikipedia(query: str) -> str:
         return TOOL_EXECUTION_FAILED.format(tool_name=ToolName.WIKIPEDIA, error=str(e))
 
 
-@tool(ToolName.ARXIV)
+@tool
 def search_arxiv(query: str) -> str:
     """Search Arxiv for academic papers and research on a topic.
     Use this when the question is about recent research, scientific
@@ -59,7 +59,7 @@ def search_arxiv(query: str) -> str:
         return TOOL_EXECUTION_FAILED.format(tool_name=ToolName.ARXIV, error=str(e))
 
 
-@tool(ToolName.WEB_SEARCH)
+@tool
 def web_search(query: str) -> str:
     """Search the web using DuckDuckGo for current information.
     Use this as a last resort when the vector store, Wikipedia,
@@ -73,4 +73,4 @@ def web_search(query: str) -> str:
         return TOOL_EXECUTION_FAILED.format(tool_name=ToolName.WEB_SEARCH, error=str(e))
 
 
-ALL_TOOLS = [search_documents, search_wikipedia, search_arxiv, web_search]
+ALL_TOOLS = [search_documents, search_wikipedia, search_arxiv, web_search]  
