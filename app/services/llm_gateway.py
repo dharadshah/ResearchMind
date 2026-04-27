@@ -46,7 +46,6 @@ class LLMGateway:
 
     _providers: dict[str, LLMProviderBase] = {
         LLMProvider.GROQ: GroqProvider(),
-        LLMProvider.OPENAI: OpenAIProvider(),
         LLMProvider.OLLAMA: OllamaProvider(),
     }
 

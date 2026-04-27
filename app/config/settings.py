@@ -10,6 +10,11 @@ class Settings(BaseSettings):
     openai_model: str = "gpt-4o-mini"
     database_url: str = "sqlite:///./researchmind.db"
     llm_provider: str = "groq"
+    vector_store_provider: str = "faiss"
+    vector_store_path: str = "./vector_store"
+    embedding_model: str = "all-MiniLM-L6-v2"
+    qdrant_url: str = "http://localhost:6333"
+    chroma_path: str = "./chroma_store"
 
     model_config = {"env_file": ".env"}
 

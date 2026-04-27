@@ -14,3 +14,7 @@ TEMPLATE_NOT_FOUND = "Prompt template with id {template_id} was not found."
 TEMPLATE_NAME_EXISTS = "A prompt template with name '{name}' already exists."
 TEMPLATE_CREATED = "Prompt template created successfully."
 PROMPT_RUN_FAILED = "Failed to run prompt. Please try again."
+
+VECTOR_STORE_NOT_INITIALIZED = "Vector store has not been initialized yet. Please ingest documents first."
+VECTOR_STORE_PROVIDER_NOT_SUPPORTED = "Vector store provider '{provider}' is not supported."
+EMBEDDING_FAILED = "Failed to generate embeddings. Please try again."

@@ -9,10 +9,9 @@ DEFAULT_TOP_K = 5
 
 class LLMProvider:
     GROQ = "groq"
-    OPENAI = "openai"
     OLLAMA = "ollama"
 
-    ALL = [GROQ, OPENAI, OLLAMA]
+    ALL = [GROQ, OLLAMA]
 
 
 class DocumentStatus:
@@ -28,3 +27,10 @@ class QueryIntent:
     COMPARE = "compare"
 
     ALL = [FACTUAL, ANALYTICAL, SUMMARISE, COMPARE]
+
+class VectorStoreProvider:
+    FAISS = "faiss"
+    CHROMA = "chroma"
+    QDRANT = "qdrant"
+
+    ALL = [FAISS, CHROMA, QDRANT]
