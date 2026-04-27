@@ -9,6 +9,8 @@ from app.constants.messages import (
     VECTOR_STORE_NOT_INITIALIZED,
     VECTOR_STORE_PROVIDER_NOT_SUPPORTED,
 )
+from app.services.reranker import Reranker
+
 
 
 class VectorStoreBase(ABC):
@@ -64,6 +66,12 @@ class FAISSVectorStore(VectorStoreBase):
                 results.append(result)
         return results
 
+    def search_and_rerank(self, query: str, top_k: int = 5) -> list[dict]:
+        results = self.search(query, top_k=top_k * 2)
+        if not results:
+            return results
+        return Reranker.rerank(query, results, top_k=top_k)
+
     def clear(self) -> None:
         self.index = None
         self.metadata_store = []
@@ -112,3 +120,10 @@ class VectorStoreGateway:
                     VECTOR_STORE_PROVIDER_NOT_SUPPORTED.format(provider=selected)
                 )
         return cls._stores[selected]
+    
+    @classmethod
+    def search_and_rerank(cls, query: str, top_k: int = 5, provider: str | None = None) -> list[dict]:
+        store = cls.get_store(provider)
+        if hasattr(store, "search_and_rerank"):
+            return store.search_and_rerank(query, top_k=top_k)
+        return store.search(query, top_k=top_k)

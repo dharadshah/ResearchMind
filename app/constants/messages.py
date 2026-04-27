@@ -36,3 +36,5 @@ HITL_AWAITING_APPROVAL = "Agent paused. Please review the intent and approve or 
 HITL_RESUMED = "Agent resumed successfully."
 HITL_THREAD_NOT_FOUND = "No paused session found for thread_id '{thread_id}'."
 HITL_REJECTED = "Query rejected by user."
+
+RERANKING_FAILED = "Reranking failed, falling back to original ranking."

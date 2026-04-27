@@ -37,3 +37,15 @@ def search(request: SearchRequest):
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/search-and-rerank")
+def search_and_rerank(request: SearchRequest):
+    try:
+        results = VectorStoreGateway.search_and_rerank(
+            request.query, top_k=request.top_k
+        )
+        return {"results": results}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

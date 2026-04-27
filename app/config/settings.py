@@ -20,7 +20,10 @@ class Settings(BaseSettings):
     langchain_tracing_v2: str = "false"
     langchain_api_key: str = ""
     langchain_project: str = "researchmind"
-
+    reranker_model: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+    reranker_top_k: int = 3
+    enable_reranking: bool = True
+    
     model_config = {"env_file": ".env"}
 
 
