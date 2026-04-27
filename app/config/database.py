@@ -1,5 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
+from langgraph.checkpoint.sqlite import SqliteSaver
 from app.config.settings import settings
 
 
@@ -21,3 +22,6 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+checkpointer = SqliteSaver.from_conn_string("./researchmind_checkpoints.db")

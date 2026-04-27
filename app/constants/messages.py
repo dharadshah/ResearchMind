@@ -31,3 +31,8 @@ AGENT_RUN_FAILED = "The research agent failed to process your query. Please try 
 
 CONVERSATION_NOT_FOUND = "Conversation with id {conversation_id} was not found."
 CONVERSATION_CREATED = "Conversation created successfully."
+
+HITL_AWAITING_APPROVAL = "Agent paused. Please review the intent and approve or override to continue."
+HITL_RESUMED = "Agent resumed successfully."
+HITL_THREAD_NOT_FOUND = "No paused session found for thread_id '{thread_id}'."
+HITL_REJECTED = "Query rejected by user."

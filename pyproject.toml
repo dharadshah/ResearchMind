@@ -27,7 +27,8 @@ dependencies = [
     "arxiv (>=3.0.0,<4.0.0)",
     "ddgs (>=9.14.1,<10.0.0)",
     "langgraph (>=1.1.9,<2.0.0)",
-    "langsmith (>=0.7.37,<0.8.0)"
+    "langsmith (>=0.7.37,<0.8.0)",
+    "langgraph-checkpoint-sqlite (>=3.0.3,<4.0.0)"
 ]
 
 [build-system]
