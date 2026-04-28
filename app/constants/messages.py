@@ -41,3 +41,6 @@ RERANKING_FAILED = "Reranking failed, falling back to original ranking."
 
 MEMORY_SUMMARY_FAILED = "Failed to summarise conversation history."
 MEMORY_RETRIEVAL_FAILED = "Failed to retrieve relevant memory."
+
+EVALUATION_FAILED = "Evaluation failed. Please try again."
+EVALUATION_NOT_FOUND = "Evaluation with id {evaluation_id} was not found."

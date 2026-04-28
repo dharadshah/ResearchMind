@@ -28,6 +28,7 @@ dependencies = [
     "ddgs (>=9.14.1,<10.0.0)",
     "langgraph (>=1.1.9,<2.0.0)",
     "langsmith (>=0.7.37,<0.8.0)",
+    "trulens-eval (>=2.7.2,<3.0.0)",
 ]
 
 [build-system]

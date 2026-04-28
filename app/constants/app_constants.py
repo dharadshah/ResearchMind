@@ -76,3 +76,10 @@ class QueryIntent:
     FACT_CHECK = "fact_check"
 
     ALL = [RESEARCH, SUMMARISE, FACT_CHECK]
+
+class EvaluationMetric:
+    ANSWER_RELEVANCE = "answer_relevance"
+    CONTEXT_RELEVANCE = "context_relevance"
+    GROUNDEDNESS = "groundedness"
+
+    ALL = [ANSWER_RELEVANCE, CONTEXT_RELEVANCE, GROUNDEDNESS]

@@ -85,3 +85,29 @@ SUMMARY_SECTION = (
 RELEVANT_MEMORY_SECTION = (
     "Relevant past exchanges:\n{relevant_memory}\n\n"
 )
+
+EVALUATION_ANSWER_RELEVANCE_PROMPT = (
+    "You are an evaluation assistant. Score how relevant the response is "
+    "to the question on a scale of 0.0 to 1.0.\n\n"
+    "Question: {question}\n\n"
+    "Response: {response}\n\n"
+    "Return only a decimal number between 0.0 and 1.0. Nothing else."
+)
+
+EVALUATION_CONTEXT_RELEVANCE_PROMPT = (
+    "You are an evaluation assistant. Score how relevant the context is "
+    "to the question on a scale of 0.0 to 1.0.\n\n"
+    "Question: {question}\n\n"
+    "Context: {context}\n\n"
+    "Return only a decimal number between 0.0 and 1.0. Nothing else."
+)
+
+EVALUATION_GROUNDEDNESS_PROMPT = (
+    "You are an evaluation assistant. Score how grounded the response is "
+    "in the provided context on a scale of 0.0 to 1.0.\n"
+    "A score of 1.0 means every claim in the response is supported by the context.\n"
+    "A score of 0.0 means the response is entirely unsupported by the context.\n\n"
+    "Context: {context}\n\n"
+    "Response: {response}\n\n"
+    "Return only a decimal number between 0.0 and 1.0. Nothing else."
+)

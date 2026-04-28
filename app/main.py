@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from app.config.database import Base, engine
 from app.config.logging_config import setup_logging
-from app.routers import llm, prompt_studio, vector_store, document_indexer, tools, research_agent, hitl
+from app.routers import llm, prompt_studio, vector_store, document_indexer, tools, research_agent, hitl, evaluation
 
 setup_logging()
 
@@ -27,6 +27,8 @@ app.include_router(document_indexer.router)
 app.include_router(tools.router)
 app.include_router(research_agent.router)
 app.include_router(hitl.router)
+app.include_router(evaluation.router)
+
 
 
 
