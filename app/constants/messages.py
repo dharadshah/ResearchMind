@@ -38,3 +38,6 @@ HITL_THREAD_NOT_FOUND = "No paused session found for thread_id '{thread_id}'."
 HITL_REJECTED = "Query rejected by user."
 
 RERANKING_FAILED = "Reranking failed, falling back to original ranking."
+
+MEMORY_SUMMARY_FAILED = "Failed to summarise conversation history."
+MEMORY_RETRIEVAL_FAILED = "Failed to retrieve relevant memory."

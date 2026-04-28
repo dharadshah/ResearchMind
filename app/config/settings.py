@@ -23,7 +23,9 @@ class Settings(BaseSettings):
     reranker_model: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
     reranker_top_k: int = 3
     enable_reranking: bool = True
-    
+    memory_window_size: int = 10
+    memory_summary_threshold: int = 10
+    memory_collection_name: str = "conversation_memory"
     model_config = {"env_file": ".env"}
 
 

@@ -62,3 +62,26 @@ FACT_CHECK_PROMPT = (
     "Context:\n{context}\n\n"
     "Respond with: Supported, Contradicted, or Unverifiable — followed by a brief explanation."
 )
+
+CONVERSATION_SUMMARY_PROMPT = (
+    "Summarise the following conversation history into a concise paragraph. "
+    "Capture the key topics discussed, questions asked, and answers given. "
+    "Be factual and brief.\n\n"
+    "Conversation:\n{history}"
+)
+
+MEMORY_AWARE_SYSTEM_PROMPT = (
+    "You are a research assistant with memory of past conversations.\n\n"
+    "{summary_section}"
+    "{relevant_memory_section}"
+    "Answer the user's question using the provided context.\n\n"
+    "Context:\n{context}"
+)
+
+SUMMARY_SECTION = (
+    "Summary of earlier conversation:\n{summary}\n\n"
+)
+
+RELEVANT_MEMORY_SECTION = (
+    "Relevant past exchanges:\n{relevant_memory}\n\n"
+)

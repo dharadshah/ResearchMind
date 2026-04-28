@@ -7,6 +7,8 @@ from app.services.conversation_service import ConversationService
 from app.schemas.conversation import ConversationResponse
 from app.constants.messages import AGENT_RUN_FAILED
 from app.config.logging_config import get_logger
+from app.services.memory_service import MemoryService
+
 
 logger = get_logger(__name__)
 
@@ -33,24 +35,39 @@ class ResearchResponse(BaseModel):
 @router.post("/query", response_model=ResearchResponse)
 def query(request: ResearchRequest, db: Session = Depends(get_db)):
     try:
-        service = ConversationService(db)
+        conv_service = ConversationService(db)
+        memory_service = MemoryService(db)
 
         if request.conversation_id:
-            conversation = service.get_conversation(request.conversation_id)
-            history = service.get_history(request.conversation_id)
+            conversation = conv_service.get_conversation(request.conversation_id)
+            memory_context = memory_service.get_full_memory_context(
+                request.conversation_id, request.question
+            )
+            history = memory_context["window_history"]
         else:
-            conversation = service.create_conversation()
+            conversation = conv_service.create_conversation()
+            memory_context = {}
             history = []
 
-        result = run_supervisor(request.question, history=history)
+        result = run_supervisor(
+            request.question,
+            history=history,
+            memory_context=memory_context,
+        )
 
-        service.add_turn(
+        conv_service.add_turn(
             conversation_id=conversation.id,
             question=result["question"],
             response=result["response"],
             decision=result["decision"],
             tools_used=result["tools_used"],
             sources=result["sources"],
+        )
+
+        memory_service.store_turn_in_vector_memory(
+            conversation_id=conversation.id,
+            question=result["question"],
+            response=result["response"],
         )
 
         return ResearchResponse(
