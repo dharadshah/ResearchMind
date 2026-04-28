@@ -1,11 +1,11 @@
 from langchain_core.tools import tool
 from langchain_community.tools import WikipediaQueryRun, ArxivQueryRun, DuckDuckGoSearchRun
 from langchain_community.utilities import WikipediaAPIWrapper, ArxivAPIWrapper, DuckDuckGoSearchAPIWrapper
+from pydantic import BaseModel, Field
 from app.services.vector_store import VectorStoreGateway
+from app.config.settings import settings
 from app.constants.messages import TOOL_NO_RESULTS, TOOL_EXECUTION_FAILED
 from app.constants.app_constants import ToolName
-from app.config.settings import settings
-
 
 
 _wikipedia = WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper(top_k_results=2))
@@ -13,18 +13,40 @@ _arxiv = ArxivQueryRun(api_wrapper=ArxivAPIWrapper(top_k_results=2))
 _ddg = DuckDuckGoSearchRun(api_wrapper=DuckDuckGoSearchAPIWrapper())
 
 
-@tool
-def search_documents(query: str) -> str:
+class DocumentSearchInput(BaseModel):
+    query: str = Field(description="The search query to find relevant document chunks")
+    top_k: int = Field(default=3, description="Number of results to return")
+    source_filter: str | None = Field(
+        default=None,
+        description="Filter results by document source name. Use when the user asks about a specific document."
+    )
+
+
+@tool(args_schema=DocumentSearchInput)
+def search_documents(
+    query: str,
+    top_k: int = 3,
+    source_filter: str | None = None,
+) -> str:
     """Search the ingested documents in the local vector store.
     Use this tool first before searching the web or Wikipedia.
+    Supports filtering by document source and controlling result count.
     Returns the most relevant chunks from ingested documents."""
     try:
         store = VectorStoreGateway.get_store()
 
         if settings.enable_reranking:
-            results = VectorStoreGateway.search_and_rerank(query, top_k=settings.reranker_top_k)
+            results = VectorStoreGateway.search_and_rerank(query, top_k=top_k * 2)
         else:
-            results = store.search(query, top_k=3)
+            results = store.search(query, top_k=top_k * 2)
+
+        if source_filter:
+            results = [
+                r for r in results
+                if source_filter.lower() in r.get("source", "").lower()
+            ]
+
+        results = results[:top_k]
 
         if not results:
             return TOOL_NO_RESULTS.format(query=query)
@@ -83,4 +105,4 @@ def web_search(query: str) -> str:
         return TOOL_EXECUTION_FAILED.format(tool_name=ToolName.WEB_SEARCH, error=str(e))
 
 
-ALL_TOOLS = [search_documents, search_wikipedia, search_arxiv, web_search]  
+ALL_TOOLS = [search_documents, search_wikipedia, search_arxiv, web_search]

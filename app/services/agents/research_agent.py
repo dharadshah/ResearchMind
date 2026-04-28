@@ -54,13 +54,13 @@ def tool_selector_node(state: ResearchState) -> ResearchState:
     if result.tool_calls:
         for tool_call in result.tool_calls:
             tool_name = tool_call["name"]
-            tool_input = tool_call["args"].get("query", state["question"])
-            logger.info("research_agent | tool_call | name: %s", tool_name)
+            tool_args = tool_call["args"]
+            logger.info("research_agent | tool_call | name: %s | args: %s", tool_name, tool_args)
             if tool_name in tool_map:
-                tool_output = tool_map[tool_name].invoke(tool_input)
+                tool_output = tool_map[tool_name].invoke(tool_args)
                 tool_results.append({
                     "tool": tool_name,
-                    "query": tool_input,
+                    "query": tool_args.get("query", state["question"]),
                     "result": tool_output,
                 })
                 tools_used.append(tool_name)
