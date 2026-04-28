@@ -1,12 +1,14 @@
-from langchain_core.tools import tool
+from langchain_core.tools import BaseTool, tool
 from langchain_community.tools import WikipediaQueryRun, ArxivQueryRun, DuckDuckGoSearchRun
 from langchain_community.utilities import WikipediaAPIWrapper, ArxivAPIWrapper, DuckDuckGoSearchAPIWrapper
 from pydantic import BaseModel, Field
 from app.services.vector_store import VectorStoreGateway
 from app.config.settings import settings
+from app.config.logging_config import get_logger
 from app.constants.messages import TOOL_NO_RESULTS, TOOL_EXECUTION_FAILED
 from app.constants.app_constants import ToolName
 
+logger = get_logger(__name__)
 
 _wikipedia = WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper(top_k_results=2))
 _arxiv = ArxivQueryRun(api_wrapper=ArxivAPIWrapper(top_k_results=2))
@@ -22,45 +24,75 @@ class DocumentSearchInput(BaseModel):
     )
 
 
-@tool(args_schema=DocumentSearchInput)
-def search_documents(
-    query: str,
-    top_k: int = 3,
-    source_filter: str | None = None,
-) -> str:
-    """Search the ingested documents in the local vector store.
-    Use this tool first before searching the web or Wikipedia.
-    Supports filtering by document source and controlling result count.
-    Returns the most relevant chunks from ingested documents."""
-    try:
-        store = VectorStoreGateway.get_store()
+class DocumentSearchTool(BaseTool):
+    name: str = ToolName.VECTOR_SEARCH
+    description: str = (
+        "Search the ingested documents in the local vector store. "
+        "Use this tool first before searching the web or Wikipedia. "
+        "Supports filtering by document source and controlling result count. "
+        "Returns the most relevant chunks from ingested documents."
+    )
+    args_schema: type[BaseModel] = DocumentSearchInput
 
-        if settings.enable_reranking:
-            results = VectorStoreGateway.search_and_rerank(query, top_k=top_k * 2)
-        else:
-            results = store.search(query, top_k=top_k * 2)
+    def _run(
+        self,
+        query: str,
+        top_k: int = 3,
+        source_filter: str | None = None,
+    ) -> str:
+        try:
+            store = VectorStoreGateway.get_store()
 
-        if source_filter:
-            results = [
-                r for r in results
-                if source_filter.lower() in r.get("source", "").lower()
-            ]
+            if settings.enable_reranking:
+                results = VectorStoreGateway.search_and_rerank(
+                    query, top_k=top_k * 2
+                )
+            else:
+                results = store.search(query, top_k=top_k * 2)
 
-        results = results[:top_k]
+            if source_filter:
+                results = [
+                    r for r in results
+                    if source_filter.lower() in r.get("source", "").lower()
+                ]
 
-        if not results:
+            results = results[:top_k]
+
+            if not results:
+                return TOOL_NO_RESULTS.format(query=query)
+
+            logger.info(
+                "DocumentSearchTool | query: %s | results: %d | source_filter: %s",
+                query,
+                len(results),
+                source_filter,
+            )
+
+            return "\n\n".join(
+                f"Source: {r.get('source', 'unknown')}\n"
+                f"Score: {r.get('rerank_score', r.get('score', 0)):.4f}\n"
+                f"{r.get('text', '')}"
+                for r in results
+            )
+        except ValueError:
             return TOOL_NO_RESULTS.format(query=query)
+        except Exception as e:
+            logger.error(
+                "DocumentSearchTool | failed | error: %s",
+                str(e),
+                exc_info=True,
+            )
+            return TOOL_EXECUTION_FAILED.format(
+                tool_name=ToolName.VECTOR_SEARCH, error=str(e)
+            )
 
-        return "\n\n".join(
-            f"Source: {r.get('source', 'unknown')}\n"
-            f"Score: {r.get('rerank_score', r.get('score', 0)):.4f}\n"
-            f"{r.get('text', '')}"
-            for r in results
-        )
-    except ValueError:
-        return TOOL_NO_RESULTS.format(query=query)
-    except Exception as e:
-        return TOOL_EXECUTION_FAILED.format(tool_name="search_documents", error=str(e))
+    async def _arun(
+        self,
+        query: str,
+        top_k: int = 3,
+        source_filter: str | None = None,
+    ) -> str:
+        return self._run(query, top_k=top_k, source_filter=source_filter)
 
 
 @tool
@@ -74,6 +106,7 @@ def search_wikipedia(query: str) -> str:
             return TOOL_NO_RESULTS.format(query=query)
         return result
     except Exception as e:
+        logger.error("search_wikipedia | failed | error: %s", str(e), exc_info=True)
         return TOOL_EXECUTION_FAILED.format(tool_name=ToolName.WIKIPEDIA, error=str(e))
 
 
@@ -88,6 +121,7 @@ def search_arxiv(query: str) -> str:
             return TOOL_NO_RESULTS.format(query=query)
         return result
     except Exception as e:
+        logger.error("search_arxiv | failed | error: %s", str(e), exc_info=True)
         return TOOL_EXECUTION_FAILED.format(tool_name=ToolName.ARXIV, error=str(e))
 
 
@@ -102,7 +136,10 @@ def web_search(query: str) -> str:
             return TOOL_NO_RESULTS.format(query=query)
         return result
     except Exception as e:
+        logger.error("web_search | failed | error: %s", str(e), exc_info=True)
         return TOOL_EXECUTION_FAILED.format(tool_name=ToolName.WEB_SEARCH, error=str(e))
 
+
+search_documents = DocumentSearchTool()
 
 ALL_TOOLS = [search_documents, search_wikipedia, search_arxiv, web_search]
