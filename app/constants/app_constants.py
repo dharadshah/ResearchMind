@@ -83,3 +83,44 @@ class EvaluationMetric:
     GROUNDEDNESS = "groundedness"
 
     ALL = [ANSWER_RELEVANCE, CONTEXT_RELEVANCE, GROUNDEDNESS]
+
+class SecurityFlag:
+    PROMPT_INJECTION = "prompt_injection"
+    PII_DETECTED = "pii_detected"
+    CLEAN = "clean"
+
+    ALL = [PROMPT_INJECTION, PII_DETECTED, CLEAN]
+
+
+PROMPT_INJECTION_PATTERNS = [
+    "ignore previous instructions",
+    "ignore all instructions",
+    "disregard your instructions",
+    "forget your instructions",
+    "you are now",
+    "act as if",
+    "pretend you are",
+    "override instructions",
+    "system prompt",
+    "jailbreak",
+    "do anything now",
+    "dan mode",
+    "bypass",
+    "ignore your training",
+    "new persona",
+    "simulate",
+]
+
+class GuardrailStatus:
+    PASSED = "passed"
+    BLOCKED = "blocked"
+    ERROR = "error"
+
+TECHNICAL_TERMS_ALLOWLIST = {
+    "faiss", "bert", "gpt", "llm", "rag", "api", "sql", "nosql",
+    "langchain", "langgraph", "llamaindex", "docker", "python",
+    "fastapi", "gradio", "openai", "groq", "ollama", "chroma",
+    "qdrant", "pinecone", "huggingface", "pytorch", "tensorflow",
+    "researchmind", "spacy", "presidio", "uvicorn", "sqlalchemy",
+    "pydantic", "arxiv", "wikipedia", "duckduckgo",
+}

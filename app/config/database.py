@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
-from langgraph.checkpoint.memory import MemorySaver
+from langgraph.checkpoint.sqlite import SqliteSaver
 from app.config.settings import settings
 
 
@@ -24,4 +24,5 @@ def get_db():
         db.close()
 
 
-checkpointer = MemorySaver()
+_checkpointer_cm = SqliteSaver.from_conn_string("./researchmind_checkpoints.db")
+checkpointer = _checkpointer_cm.__enter__()

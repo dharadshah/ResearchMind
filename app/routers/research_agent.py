@@ -4,11 +4,17 @@ from sqlalchemy.orm import Session
 from app.config.database import get_db
 from app.services.agents.supervisor_agent import run_supervisor
 from app.services.conversation_service import ConversationService
-from app.schemas.conversation import ConversationResponse
-from app.constants.messages import AGENT_RUN_FAILED
-from app.config.logging_config import get_logger
 from app.services.memory_service import MemoryService
-
+from app.services.security_service import SecurityService
+from app.schemas.conversation import ConversationResponse
+from app.constants.messages import (
+    AGENT_RUN_FAILED,
+    PROMPT_INJECTION_DETECTED,
+    INPUT_GUARDRAIL_BLOCKED,
+    OUTPUT_GUARDRAIL_BLOCKED,
+)
+from app.constants.app_constants import GuardrailStatus
+from app.config.logging_config import get_logger
 
 logger = get_logger(__name__)
 
@@ -32,16 +38,65 @@ class ResearchResponse(BaseModel):
     conversation_id: int
 
 
+def run_security_checks(
+    question: str,
+    db: Session,
+) -> tuple[str, SecurityService]:
+    security_service = SecurityService(db)
+
+    scan_result = security_service.scan(question)
+    if scan_result["blocked"]:
+        raise HTTPException(
+            status_code=400,
+            detail=PROMPT_INJECTION_DETECTED,
+        )
+    safe_question = scan_result["sanitised_input"]
+
+    input_guardrail = security_service.check_input_guardrail(safe_question)
+    if not input_guardrail["is_safe"]:
+        logger.warning(
+            "research | input guardrail blocked | reason: %s",
+            input_guardrail["reason"],
+        )
+        raise HTTPException(
+            status_code=400,
+            detail=INPUT_GUARDRAIL_BLOCKED,
+        )
+
+    return safe_question, security_service
+
+
+def run_output_check(
+    response: str,
+    security_service: SecurityService,
+) -> str:
+    output_guardrail = security_service.check_output_guardrail(response)
+    if not output_guardrail["is_safe"]:
+        logger.warning(
+            "research | output guardrail blocked | reason: %s",
+            output_guardrail["reason"],
+        )
+        raise HTTPException(
+            status_code=400,
+            detail=OUTPUT_GUARDRAIL_BLOCKED,
+        )
+    return response
+
+
 @router.post("/query", response_model=ResearchResponse)
 def query(request: ResearchRequest, db: Session = Depends(get_db)):
     try:
+        safe_question, security_service = run_security_checks(
+            request.question, db
+        )
+
         conv_service = ConversationService(db)
         memory_service = MemoryService(db)
 
         if request.conversation_id:
             conversation = conv_service.get_conversation(request.conversation_id)
             memory_context = memory_service.get_full_memory_context(
-                request.conversation_id, request.question
+                request.conversation_id, safe_question
             )
             history = memory_context["window_history"]
         else:
@@ -50,10 +105,12 @@ def query(request: ResearchRequest, db: Session = Depends(get_db)):
             history = []
 
         result = run_supervisor(
-            request.question,
+            safe_question,
             history=history,
             memory_context=memory_context,
         )
+
+        run_output_check(result["response"], security_service)
 
         conv_service.add_turn(
             conversation_id=conversation.id,
@@ -74,6 +131,8 @@ def query(request: ResearchRequest, db: Session = Depends(get_db)):
             **result,
             conversation_id=conversation.id,
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(
             "research query failed | question: %s | error: %s",

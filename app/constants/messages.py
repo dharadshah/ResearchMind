@@ -44,3 +44,12 @@ MEMORY_RETRIEVAL_FAILED = "Failed to retrieve relevant memory."
 
 EVALUATION_FAILED = "Evaluation failed. Please try again."
 EVALUATION_NOT_FOUND = "Evaluation with id {evaluation_id} was not found."
+
+PROMPT_INJECTION_DETECTED = "Input blocked: prompt injection pattern detected."
+PII_MASKED = "PII detected and masked in input."
+SECURITY_SCAN_FAILED = "Security scan failed. Please try again."
+SECURITY_LOG_NOT_FOUND = "Security log with id {log_id} was not found."
+
+INPUT_GUARDRAIL_BLOCKED = "Your input was blocked by the guardrail. Please rephrase your question."
+OUTPUT_GUARDRAIL_BLOCKED = "The response was blocked by the output guardrail. Please try a different question."
+GUARDRAIL_CHECK_FAILED = "Guardrail check failed. Proceeding with caution."

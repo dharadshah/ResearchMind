@@ -14,6 +14,9 @@ from app.constants.messages import (
 )
 from app.constants.app_constants import QueryIntent
 from app.config.logging_config import get_logger
+from app.services.security_service import SecurityService
+from app.constants.messages import PROMPT_INJECTION_DETECTED, INPUT_GUARDRAIL_BLOCKED
+from app.routers.research_agent import run_security_checks
 
 logger = get_logger(__name__)
 
@@ -54,6 +57,10 @@ class HITLResumeResponse(BaseModel):
 @router.post("/start", response_model=HITLStartResponse)
 def start(request: HITLStartRequest, db: Session = Depends(get_db)):
     try:
+        safe_question, security_service = run_security_checks(
+            request.question, db
+        )
+
         service = ConversationService(db)
 
         if request.conversation_id:
@@ -67,7 +74,7 @@ def start(request: HITLStartRequest, db: Session = Depends(get_db)):
         config = {"configurable": {"thread_id": thread_id}}
 
         initial_state = {
-            "question": request.question,
+            "question": safe_question,
             "history": history,
             "intent": "",
             "response": "",
@@ -85,11 +92,13 @@ def start(request: HITLStartRequest, db: Session = Depends(get_db)):
 
         return HITLStartResponse(
             thread_id=thread_id,
-            question=request.question,
+            question=safe_question,
             intent=intent,
             message=HITL_AWAITING_APPROVAL,
             conversation_id=conversation.id,
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("hitl start failed | error: %s", str(e), exc_info=True)
         raise HTTPException(status_code=503, detail=AGENT_RUN_FAILED)

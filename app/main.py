@@ -1,8 +1,18 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from app.config.database import Base, engine
+from app.config.database import Base, engine, _checkpointer_cm
 from app.config.logging_config import setup_logging
-from app.routers import llm, prompt_studio, vector_store, document_indexer, tools, research_agent, hitl, evaluation
+from app.routers import (
+    llm,
+    prompt_studio,
+    vector_store,
+    document_indexer,
+    tools,
+    research_agent,
+    hitl,
+    evaluation,
+    security,
+)
 
 setup_logging()
 
@@ -11,6 +21,7 @@ setup_logging()
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
     yield
+    _checkpointer_cm.__exit__(None, None, None)
 
 
 app = FastAPI(
@@ -28,8 +39,7 @@ app.include_router(tools.router)
 app.include_router(research_agent.router)
 app.include_router(hitl.router)
 app.include_router(evaluation.router)
-
-
+app.include_router(security.router)
 
 
 @app.get("/health", tags=["system"])
